@@ -3,14 +3,17 @@ from ..webdriver_server import ChromeDriverServer
 from ..executors import executor_kwargs as base_executor_kwargs
 from ..executors.executorselenium import (SeleniumTestharnessExecutor,
                                           SeleniumRefTestExecutor)
-from ..executors.executorchrome import ChromeDriverWdspecExecutor
+from ..executors.executorwebdriver import (WebDriverTestharnessExecutor,
+                                          WebDriverRefTestExecutor)
+from ..executors.executorchrome import (ChromeDriverWdspecExecutor,
+                                        ChromeDriverTestHarnessExecutor)
 
 
 __wptrunner__ = {"product": "chrome",
                  "check_args": "check_args",
                  "browser": "ChromeBrowser",
-                 "executor": {"testharness": "SeleniumTestharnessExecutor",
-                              "reftest": "SeleniumRefTestExecutor",
+                 "executor": {"testharness": "ChromeDriverTestHarnessExecutor",
+                              "reftest": "WebDriverTestharnessExecutor",
                               "wdspec": "ChromeDriverWdspecExecutor"},
                  "browser_kwargs": "browser_kwargs",
                  "executor_kwargs": "executor_kwargs",
@@ -74,6 +77,8 @@ class ChromeBrowser(Browser):
         the browser binary to use for testing."""
         Browser.__init__(self, logger)
         self.binary = binary
+        self.webdriver_binary = webdriver_binary
+        self.webdriver_args = webdriver_args
         self.server = ChromeDriverServer(self.logger,
                                          binary=webdriver_binary,
                                          args=webdriver_args)
@@ -97,4 +102,6 @@ class ChromeBrowser(Browser):
         self.stop()
 
     def executor_browser(self):
-        return ExecutorBrowser, {"webdriver_url": self.server.url}
+        return ExecutorBrowser, {"webdriver_url": self.server.url,
+                                 "webdriver_binary": self.webdriver_binary,
+                                 "webdriver_args": self.webdriver_args}
