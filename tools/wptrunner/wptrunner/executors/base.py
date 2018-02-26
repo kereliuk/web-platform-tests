@@ -5,6 +5,7 @@ import threading
 import traceback
 import socket
 import urlparse
+import sys
 from abc import ABCMeta, abstractmethod
 
 from ..testrunner import Stop
@@ -463,7 +464,15 @@ class WebDriverProtocol(Protocol):
             self.logger.warning("Failed to connect via WebDriver")
             self.executor.runner.send_message("init_failed")
         else:
-            self.executor.runner.send_message("init_succeeded")
+            try:
+                self.after_connect()
+            except Exception:
+                print >> sys.stderr, traceback.format_exc()
+                self.logger.warning(
+                    "Failed to connect to navigate initial page")
+                self.executor.runner.send_message("init_failed")
+            else:
+                self.executor.runner.send_message("init_succeeded")
 
     # def setup(self, runner):
     #     """Connect to browser via the HTTP server."""
@@ -504,3 +513,26 @@ class WebDriverProtocol(Protocol):
         conn.request("HEAD", self.server.base_path + "invalid")
         res = conn.getresponse()
         return res.status == 404
+
+    def after_connect(self):
+        self.load_runner("http")
+
+    def load_runner(self, protocol):
+        url = urlparse.urljoin(self.executor.server_url(protocol),
+                               "/testharness_runner.html")
+        self.logger.debug("Loading %s" % url)
+        self.session.send_session_command('POST', 'url', {'url': url})
+        self.session.send_session_command('POST', 'execute/sync', {'script': "document.title = '%s'" %
+                                      threading.current_thread().name.replace("'", '"'), 'args': []})
+
+    def wait(self):
+        while True:
+            try:
+                self.session.send_session_command('POST', 'execute/async', {'script': "", 'args': []})
+            # except exceptions.TimeoutException:
+            #     pass
+            except (socket.timeout, IOError, webdriver.NoSuchWindowException):
+                break
+            except Exception as e:
+                self.logger.error(traceback.format_exc(e))
+                break

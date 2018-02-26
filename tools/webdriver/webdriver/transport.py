@@ -147,19 +147,14 @@ class HTTPWireProtocol(object):
         conn_kwargs = {}
         if self._timeout is not None:
             conn_kwargs["timeout"] = self._timeout
-        print(self.host)
-        print(self.port)
+
         conn = httplib.HTTPConnection(
             self.host, self.port, strict=True, **conn_kwargs)
         conn.request(method, url, payload, headers)
 
         try:
             response = conn.getresponse()
-            print(method)
-            print(url)
-            print(payload)
-            # if url.endswith('window'):
-            #     print(response.read())
+            
             return Response.from_http(
                 response, decoder=decoder, **codec_kwargs)
         finally:

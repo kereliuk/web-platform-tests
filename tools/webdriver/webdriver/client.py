@@ -394,10 +394,6 @@ class Session(object):
         if self.capabilities is not None:
             body["capabilities"] = self.capabilities
 
-        # body = {}
-        # body["desiredCapabilities"] = {}
-        print(body)
-        print("is body")
         value = self.send_command("POST", "session", body=body)
         self.session_id = value["sessionId"]
         # print(value)

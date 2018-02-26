@@ -45,11 +45,7 @@ class WebDriverRun(object):
     def run(self):
         timeout = self.timeout
 
-        # try:
-        #     self.webdriver.set_script_timeout((timeout + extra_timeout) * 1000)
-        # except exceptions.ErrorInResponseException:
-        #     self.logger.error("Lost WebDriver connection")
-        #     return Stop
+        self.session.send_session_command('POST', 'timeouts', {'type': 'script', 'ms': (timeout + extra_timeout) * 1000})
 
         executor = threading.Thread(target=self._run)
         executor.start()
@@ -160,7 +156,8 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
             win_obj = json.loads(win_s)
             test_window = win_obj["window-fcc6-11e5-b4f8-330a88ab9d7f"]
         except Exception:
-            after = window_handles = session.send_session_command('GET', 'window/handles')
+            print("YES")
+            after = session.send_session_command('GET', 'window/handles')
             if len(after) == 2:
                 test_window = next(iter(set(after) - set([parent])))
             elif after[0] == parent and len(after) > 2:
@@ -186,10 +183,12 @@ class CallbackHandler(object):
         self.logger = logger
 
     def __call__(self, result):
+        print(result)
         self.logger.debug("Got async callback: %s" % result[1])
         try:
             attr = getattr(self, "process_%s" % result[1])
         except AttributeError:
+            # return False, None
             raise ValueError("Unknown callback type %r" % result[1])
         else:
             return attr(result)
