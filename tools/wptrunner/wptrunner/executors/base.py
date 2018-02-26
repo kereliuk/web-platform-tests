@@ -444,7 +444,7 @@ class WebDriverProtocol(Protocol):
     def setup(self, runner):
         """Connect to browser via WebDriver."""
         self.runner = runner
-        print(self.browser.webdriver_url)
+        # print(self.browser.webdriver_url)
         # url = "http://%s:%d" % (self.browser.webdriver_url, self.port)
         session_started = False
         base = self.browser.webdriver_url.strip('http://')

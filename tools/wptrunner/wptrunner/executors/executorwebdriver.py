@@ -143,24 +143,24 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
                       "timeout": timeout * 1000}
 
         parent = session.send_session_command('GET', 'window')
-        print(parent)
-        handles = [item for item in webdriver.window_handles if item != parent]
+        window_handles = session.send_session_command('GET', 'window/handles')
+        handles = [item for item in window_handles if item != parent]
         for handle in handles:
             try:
-                webdriver.switch_to_window(handle)
-                webdriver.close()
+                session.send_session_command('POST', 'window', {'handle': handle})
+                session.send_session_command('DELETE', 'window')
             except exceptions.NoSuchWindowException:
                 pass
-        webdriver.switch_to_window(parent)
+        session.send_session_command('POST', 'window', {'handle': parent})
 
-        webdriver.execute_script(self.script % format_map)
+        session.send_session_command('POST', 'execute/sync', {'script': self.script % format_map, 'args': []})
         try:
             # Try this, it's in Level 1 but nothing supports it yet
-            win_s = webdriver.execute_script("return window['%s'];" % self.window_id)
+            session.send_session_command('POST', 'execute/sync', {'script': "return window['%s'];" % self.window_id, 'args': []})
             win_obj = json.loads(win_s)
             test_window = win_obj["window-fcc6-11e5-b4f8-330a88ab9d7f"]
         except Exception:
-            after = webdriver.window_handles
+            after = window_handles = session.send_session_command('GET', 'window/handles')
             if len(after) == 2:
                 test_window = next(iter(set(after) - set([parent])))
             elif after[0] == parent and len(after) > 2:
@@ -170,10 +170,9 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
                 raise Exception("unable to find test window")
         assert test_window != parent
 
-        handler = CallbackHandler(webdriver, test_window, self.logger)
+        handler = CallbackHandler(session, test_window, self.logger)
         while True:
-            result = webdriver.execute_async_script(
-                self.script_resume % format_map)
+            result = session.send_session_command('POST', 'execute/async', {'script': self.script_resume % format_map, 'args': []})
             done, rv = handler(result)
             if done:
                 break
@@ -181,8 +180,8 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
 
 class CallbackHandler(object):
-    def __init__(self, webdriver, test_window, logger):
-        self.webdriver = webdriver
+    def __init__(self, session, test_window, logger):
+        self.session = session
         self.test_window = test_window
         self.logger = logger
 
@@ -200,13 +199,15 @@ class CallbackHandler(object):
         return True, rv
 
     def process_action(self, result):
-        parent = self.webdriver.current_window_handle
+        parent = session.send_session_command('GET', 'window')
         try:
-            self.webdriver.switch_to.window(self.test_window)
+            session.send_session_command('POST', 'window', {'handle': self.test_window})
+            # self.webdriver.switch_to.window(self.test_window)
             action = result[2]["action"]
             self.logger.debug("Got action: %s" % action)
             if action == "click":
                 selector = result[2]["selector"]
+                #TODO: THIS
                 elements = self.webdriver.find_elements_by_css_selector(selector)
                 if len(elements) == 0:
                     raise ValueError("Selector matches no elements")
@@ -226,7 +227,7 @@ class CallbackHandler(object):
                                        "success")
                     self.logger.debug("Clicking element succeeded")
         finally:
-            self.webdriver.switch_to.window(parent)
+            session.send_session_command('POST', 'window', {'handle': parent})
 
         return False, None
 
@@ -237,7 +238,8 @@ class CallbackHandler(object):
         }
         if message:
             obj["message"] = str(message)
-        self.webdriver.execute_script("window.postMessage(%s, '*')" % json.dumps(obj))
+
+        session.send_session_command('POST', 'execute/sync', {'script': "window.postMessage(%s, '*')" % json.dumps(obj), 'args': []})
 
 
 
