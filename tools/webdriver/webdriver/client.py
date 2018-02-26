@@ -394,8 +394,13 @@ class Session(object):
         if self.capabilities is not None:
             body["capabilities"] = self.capabilities
 
+        # body["capabilities"]['chromeOptions']['w3c'] = True
+        body = {}
+        body['desiredCapabilities'] = {}
+        print(body)
         value = self.send_command("POST", "session", body=body)
         self.session_id = value["sessionId"]
+        print(value)
         self.capabilities = value["capabilities"]
 
         if self.extension_cls:

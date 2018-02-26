@@ -52,8 +52,9 @@ def executor_kwargs(test_type, server_config, cache_manager, run_info_data,
     if test_type == "testharness":
         capabilities["chromeOptions"]["useAutomationExtension"] = False
         capabilities["chromeOptions"]["excludeSwitches"] = ["enable-automation"]
-    if test_type == "wdspec":
         capabilities["chromeOptions"]["w3c"] = True
+
+    capabilities = {"alwaysMatch": capabilities}
     executor_kwargs["capabilities"] = capabilities
     return executor_kwargs
 

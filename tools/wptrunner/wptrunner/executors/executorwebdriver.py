@@ -99,7 +99,7 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
                  close_after_done=True, capabilities=None, debug_info=None,
                  **kwargs):
-        """Selenium-based executor for testharness.js tests"""
+        """WebDriver-based executor for testharness.js tests"""
         TestharnessExecutor.__init__(self, browser, server_config,
                                      timeout_multiplier=timeout_multiplier,
                                      debug_info=debug_info)
@@ -126,7 +126,7 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
         url = self.test_url(test)
 
         success, data = WebDriverRun(self.do_testharness,
-                                    self.protocol.session_config,
+                                    self.protocol.session,
                                     url,
                                     test.timeout * self.timeout_multiplier).run()
 
@@ -135,14 +135,15 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
         return (test.result_cls(*data), [])
 
-    def do_testharness(self, webdriver, url, timeout):
+    def do_testharness(self, session, url, timeout):
         format_map = {"abs_url": url,
                       "url": strip_server(url),
                       "window_id": self.window_id,
                       "timeout_multiplier": self.timeout_multiplier,
                       "timeout": timeout * 1000}
 
-        parent = webdriver.current_window_handle
+        parent = session.send_session_command('GET', 'window')
+        print(parent)
         handles = [item for item in webdriver.window_handles if item != parent]
         for handle in handles:
             try:

@@ -9,6 +9,8 @@ from abc import ABCMeta, abstractmethod
 
 from ..testrunner import Stop
 
+import webdriver
+
 here = os.path.split(__file__)[0]
 
 # Extra timeout to use after internal test timeout at which the harness
@@ -436,25 +438,51 @@ class WebDriverProtocol(Protocol):
         self.capabilities = self.executor.capabilities
         self.session_config = None
         self.server = None
+        self.session = None
+        self.browser = browser
 
     def setup(self, runner):
-        """Connect to browser via the HTTP server."""
+        """Connect to browser via WebDriver."""
+        self.runner = runner
+        print(self.browser.webdriver_url)
+        # url = "http://%s:%d" % (self.browser.webdriver_url, self.port)
+        session_started = False
+        base = self.browser.webdriver_url.strip('http://')
+        host, port = base.split(':')
         try:
-            self.server = self.server_cls(
-                self.logger,
-                binary=self.webdriver_binary,
-                args=self.webdriver_args)
-            self.server.start(block=False)
-            self.logger.info(
-                "WebDriver HTTP server listening at %s" % self.server.url)
-            self.session_config = {"host": self.server.host,
-                                   "port": self.server.port,
-                                   "capabilities": self.capabilities}
+            self.session = webdriver.Session(host, port, capabilities=self.executor.capabilities)
+            self.session.start()
         except Exception:
-            self.logger.error(traceback.format_exc())
+            self.logger.warning(
+                "Connecting with WebDriver failed:\n%s" % traceback.format_exc())
+        else:
+            self.logger.debug("session started")
+            session_started = True
+
+        if not session_started:
+            self.logger.warning("Failed to connect via WebDriver")
             self.executor.runner.send_message("init_failed")
         else:
             self.executor.runner.send_message("init_succeeded")
+
+    # def setup(self, runner):
+    #     """Connect to browser via the HTTP server."""
+    #     try:
+    #         self.server = self.server_cls(
+    #             self.logger,
+    #             binary=self.webdriver_binary,
+    #             args=self.webdriver_args)
+    #         self.server.start(block=False)
+    #         self.logger.info(
+    #             "WebDriver HTTP server listening at %s" % self.server.url)
+    #         self.session_config = {"host": self.server.host,
+    #                                "port": self.server.port,
+    #                                "capabilities": self.capabilities}
+    #     except Exception:
+    #         self.logger.error(traceback.format_exc())
+    #         self.executor.runner.send_message("init_failed")
+    #     else:
+    #         self.executor.runner.send_message("init_succeeded")
 
     def teardown(self):
         if self.server is not None and self.server.is_alive:
