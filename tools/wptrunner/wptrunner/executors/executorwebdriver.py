@@ -39,7 +39,6 @@ class WebDriverRun(object):
         self.session = session
         self.url = url
         self.timeout = timeout
-        print(timeout)
         self.result_flag = threading.Event()
 
     def run(self):
@@ -156,7 +155,6 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
             win_obj = json.loads(win_s)
             test_window = win_obj["window-fcc6-11e5-b4f8-330a88ab9d7f"]
         except Exception:
-            print("YES")
             after = session.send_session_command('GET', 'window/handles')
             if len(after) == 2:
                 test_window = next(iter(set(after) - set([parent])))
@@ -183,7 +181,6 @@ class CallbackHandler(object):
         self.logger = logger
 
     def __call__(self, result):
-        print(result)
         self.logger.debug("Got async callback: %s" % result[1])
         try:
             attr = getattr(self, "process_%s" % result[1])

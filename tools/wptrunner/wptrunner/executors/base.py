@@ -445,8 +445,6 @@ class WebDriverProtocol(Protocol):
     def setup(self, runner):
         """Connect to browser via WebDriver."""
         self.runner = runner
-        # print(self.browser.webdriver_url)
-        # url = "http://%s:%d" % (self.browser.webdriver_url, self.port)
         session_started = False
         base = self.browser.webdriver_url.strip('http://')
         host, port = base.split(':')
@@ -533,6 +531,9 @@ class WebDriverProtocol(Protocol):
             #     pass
             except (socket.timeout, IOError, webdriver.NoSuchWindowException):
                 break
+            #TODO: figure out why this is happening sometimes
+            except (webdriver.WebDriverException):
+                pass
             except Exception as e:
                 self.logger.error(traceback.format_exc(e))
                 break

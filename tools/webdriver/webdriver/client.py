@@ -396,7 +396,6 @@ class Session(object):
 
         value = self.send_command("POST", "session", body=body)
         self.session_id = value["sessionId"]
-        # print(value)
         self.capabilities = value["capabilities"]
 
         if self.extension_cls:
