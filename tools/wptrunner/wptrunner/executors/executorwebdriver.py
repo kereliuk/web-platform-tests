@@ -12,25 +12,116 @@ from .base import (Protocol,
                    RefTestExecutor,
                    RefTestImplementation,
                    TestharnessExecutor,
-                   WebDriverProtocol,
                    extra_timeout,
                    strip_server)
 from ..testrunner import Stop
 
+import webdriver
+
 here = os.path.join(os.path.split(__file__)[0])
 
-webdriver = None
 exceptions = None
 RemoteConnection = None
 
 
-def do_delayed_imports():
-    global webdriver
-    global exceptions
-    global RemoteConnection
-    from selenium import webdriver
-    from selenium.common import exceptions
-    from selenium.webdriver.remote.remote_connection import RemoteConnection
+# def do_delayed_imports():
+#     global webdriver
+#     global exceptions
+#     global RemoteConnection
+#     from selenium import webdriver
+#     from selenium.common import exceptions
+#     from selenium.webdriver.remote.remote_connection import RemoteConnection
+
+class WebDriverExecutorProtocol(Protocol):
+    server_cls = None
+
+    def __init__(self, executor, browser):
+        Protocol.__init__(self, executor, browser)
+        self.webdriver_binary = executor.webdriver_binary
+        self.webdriver_args = executor.webdriver_args
+        self.capabilities = self.executor.capabilities
+        self.session_config = None
+        self.server = None
+        self.session = None
+        self.browser = browser
+
+    def setup(self, runner):
+        """Connect to browser via WebDriver."""
+        self.runner = runner
+        session_started = False
+        base = self.browser.webdriver_url.strip('http://')
+        host, port = base.split(':')
+        try:
+            self.session = webdriver.Session(host, port, capabilities=self.executor.capabilities)
+            self.session.start()
+        except Exception:
+            self.logger.warning(
+                "Connecting with WebDriver failed:\n%s" % traceback.format_exc())
+        else:
+            self.logger.debug("session started")
+            session_started = True
+
+        if not session_started:
+            self.logger.warning("Failed to connect via WebDriver")
+            self.executor.runner.send_message("init_failed")
+        else:
+            try:
+                self.after_connect()
+            except Exception:
+                print >> sys.stderr, traceback.format_exc()
+                self.logger.warning(
+                    "Failed to connect to navigate initial page")
+                self.executor.runner.send_message("init_failed")
+            else:
+                self.executor.runner.send_message("init_succeeded")
+
+    def teardown(self):
+        if self.server is not None and self.server.is_alive:
+            self.server.stop()
+
+    @property
+    def is_alive(self):
+        """Test that the connection is still alive.
+
+        Because the remote communication happens over HTTP we need to
+        make an explicit request to the remote.  It is allowed for
+        WebDriver spec tests to not have a WebDriver session, since this
+        may be what is tested.
+
+        An HTTP request to an invalid path that results in a 404 is
+        proof enough to us that the server is alive and kicking.
+        """
+        conn = httplib.HTTPConnection(self.server.host, self.server.port)
+        conn.request("HEAD", self.server.base_path + "invalid")
+        res = conn.getresponse()
+        return res.status == 404
+
+    def after_connect(self):
+        self.load_runner("http")
+
+    def load_runner(self, protocol):
+        url = urlparse.urljoin(self.executor.server_url(protocol),
+                               "/testharness_runner.html")
+        self.logger.debug("Loading %s" % url)
+        self.session.send_session_command('POST', 'url', {'url': url})
+        self.session.send_session_command('POST', 'execute/sync', {'script': "document.title = '%s'" %
+                                      threading.current_thread().name.replace("'", '"'), 'args': []})
+
+    def wait(self):
+        while True:
+            try:
+                self.session.send_session_command('POST', 'execute/async', {'script': "", 'args': []})
+            # except exceptions.TimeoutException:
+            #     pass
+            except (socket.timeout, IOError, webdriver.NoSuchWindowException):
+                break
+            #TODO: figure out why this is happening sometimes
+            except (webdriver.WebDriverException):
+                pass
+            except Exception as e:
+                self.logger.error(traceback.format_exc(e))
+                break
+
 
 class WebDriverRun(object):
     def __init__(self, func, session, url, timeout):
@@ -250,7 +341,7 @@ class WebDriverRefTestExecutor(RefTestExecutor):
                                  screenshot_cache=screenshot_cache,
                                  timeout_multiplier=timeout_multiplier,
                                  debug_info=debug_info)
-        self.protocol = WebDriverProtocol(self, browser,
+        self.protocol = WebDriverExecutorProtocol(self, browser,
                                          capabilities=capabilities)
         self.implementation = RefTestImplementation(self)
         self.close_after_done = close_after_done

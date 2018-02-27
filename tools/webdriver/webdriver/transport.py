@@ -154,7 +154,6 @@ class HTTPWireProtocol(object):
 
         try:
             response = conn.getresponse()
-            
             return Response.from_http(
                 response, decoder=decoder, **codec_kwargs)
         finally:

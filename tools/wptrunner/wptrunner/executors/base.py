@@ -5,12 +5,9 @@ import threading
 import traceback
 import socket
 import urlparse
-import sys
 from abc import ABCMeta, abstractmethod
 
 from ..testrunner import Stop
-
-import webdriver
 
 here = os.path.split(__file__)[0]
 
@@ -439,57 +436,25 @@ class WebDriverProtocol(Protocol):
         self.capabilities = self.executor.capabilities
         self.session_config = None
         self.server = None
-        self.session = None
-        self.browser = browser
 
     def setup(self, runner):
-        """Connect to browser via WebDriver."""
-        self.runner = runner
-        session_started = False
-        base = self.browser.webdriver_url.strip('http://')
-        host, port = base.split(':')
+        """Connect to browser via the HTTP server."""
         try:
-            self.session = webdriver.Session(host, port, capabilities=self.executor.capabilities)
-            self.session.start()
+            self.server = self.server_cls(
+                self.logger,
+                binary=self.webdriver_binary,
+                args=self.webdriver_args)
+            self.server.start(block=False)
+            self.logger.info(
+                "WebDriver HTTP server listening at %s" % self.server.url)
+            self.session_config = {"host": self.server.host,
+                                   "port": self.server.port,
+                                   "capabilities": self.capabilities}
         except Exception:
-            self.logger.warning(
-                "Connecting with WebDriver failed:\n%s" % traceback.format_exc())
-        else:
-            self.logger.debug("session started")
-            session_started = True
-
-        if not session_started:
-            self.logger.warning("Failed to connect via WebDriver")
+            self.logger.error(traceback.format_exc())
             self.executor.runner.send_message("init_failed")
         else:
-            try:
-                self.after_connect()
-            except Exception:
-                print >> sys.stderr, traceback.format_exc()
-                self.logger.warning(
-                    "Failed to connect to navigate initial page")
-                self.executor.runner.send_message("init_failed")
-            else:
-                self.executor.runner.send_message("init_succeeded")
-
-    # def setup(self, runner):
-    #     """Connect to browser via the HTTP server."""
-    #     try:
-    #         self.server = self.server_cls(
-    #             self.logger,
-    #             binary=self.webdriver_binary,
-    #             args=self.webdriver_args)
-    #         self.server.start(block=False)
-    #         self.logger.info(
-    #             "WebDriver HTTP server listening at %s" % self.server.url)
-    #         self.session_config = {"host": self.server.host,
-    #                                "port": self.server.port,
-    #                                "capabilities": self.capabilities}
-    #     except Exception:
-    #         self.logger.error(traceback.format_exc())
-    #         self.executor.runner.send_message("init_failed")
-    #     else:
-    #         self.executor.runner.send_message("init_succeeded")
+            self.executor.runner.send_message("init_succeeded")
 
     def teardown(self):
         if self.server is not None and self.server.is_alive:
@@ -511,29 +476,3 @@ class WebDriverProtocol(Protocol):
         conn.request("HEAD", self.server.base_path + "invalid")
         res = conn.getresponse()
         return res.status == 404
-
-    def after_connect(self):
-        self.load_runner("http")
-
-    def load_runner(self, protocol):
-        url = urlparse.urljoin(self.executor.server_url(protocol),
-                               "/testharness_runner.html")
-        self.logger.debug("Loading %s" % url)
-        self.session.send_session_command('POST', 'url', {'url': url})
-        self.session.send_session_command('POST', 'execute/sync', {'script': "document.title = '%s'" %
-                                      threading.current_thread().name.replace("'", '"'), 'args': []})
-
-    def wait(self):
-        while True:
-            try:
-                self.session.send_session_command('POST', 'execute/async', {'script': "", 'args': []})
-            # except exceptions.TimeoutException:
-            #     pass
-            except (socket.timeout, IOError, webdriver.NoSuchWindowException):
-                break
-            #TODO: figure out why this is happening sometimes
-            except (webdriver.WebDriverException):
-                pass
-            except Exception as e:
-                self.logger.error(traceback.format_exc(e))
-                break
