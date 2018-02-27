@@ -23,15 +23,6 @@ here = os.path.join(os.path.split(__file__)[0])
 exceptions = None
 RemoteConnection = None
 
-
-# def do_delayed_imports():
-#     global webdriver
-#     global exceptions
-#     global RemoteConnection
-#     from selenium import webdriver
-#     from selenium.common import exceptions
-#     from selenium.webdriver.remote.remote_connection import RemoteConnection
-
 class WebDriverExecutorProtocol(Protocol):
     server_cls = None
 
@@ -111,8 +102,6 @@ class WebDriverExecutorProtocol(Protocol):
         while True:
             try:
                 self.session.send_session_command('POST', 'execute/async', {'script': "", 'args': []})
-            # except exceptions.TimeoutException:
-            #     pass
             except (socket.timeout, IOError, webdriver.NoSuchWindowException):
                 break
             #TODO: figure out why this is happening sometimes
@@ -142,7 +131,7 @@ class WebDriverRun(object):
 
         flag = self.result_flag.wait(timeout + 2 * extra_timeout)
         if self.result[1] is None:
-            # assert not flag
+            assert not flag
             self.result = False, ("EXTERNAL-TIMEOUT", None)
 
         return self.result
@@ -160,22 +149,6 @@ class WebDriverRun(object):
             self.result = False, ("ERROR", message)
         finally:
             self.result_flag.set()
-
-    # def _run(self):
-    #     try:
-    #         self.result = True, self.func(self.session, self.url, self.timeout)
-    #     except exceptions.TimeoutException:
-    #         self.result = False, ("EXTERNAL-TIMEOUT", None)
-    #     except (socket.timeout, exceptions.ErrorInResponseException):
-    #         self.result = False, ("CRASH", None)
-    #     except Exception as e:
-    #         message = getattr(e, "message", "")
-    #         if message:
-    #             message += "\n"
-    #         message += traceback.format_exc(e)
-    #         self.result = False, ("ERROR", e)
-    #     finally:
-    #         self.result_flag.set()
 
 
 class WebDriverTestharnessExecutor(TestharnessExecutor):
