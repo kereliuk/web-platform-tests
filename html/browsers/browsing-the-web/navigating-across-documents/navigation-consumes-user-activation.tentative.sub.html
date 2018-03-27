@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Navigations consume user activation</title>
+<a href="/">Home</a>
+<button>Click to go home</button>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script>
+var t = async_test("Navigations consume user activation");
+function doNavigatePopup() {
+  // Call .click() to synchronously dispatch the navigation.
+  document.getElementsByTagName('a')[0].click();
+  var new_window = window.open();
+  assert_equals(null, new_window, "successfully opened a new window");
+};
+
+var button = document.getElementsByTagName('button')[0];
+button.addEventListener("click", t.step_func(doNavigatePopup));
+test_driver.click(button);
+</script>
