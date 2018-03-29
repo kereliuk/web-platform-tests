@@ -1,5 +1,5 @@
 {"browser_host": "web-platform.test",
- "doc_root": null,
+ ssdoc_root": null,
  "ws_doc_root": null,
  "server_host": null,
  "ports":{"http":[8000, "auto"],
