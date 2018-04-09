@@ -273,6 +273,21 @@ class SendKeysProtocolPart(ProtocolPart):
         :param keys: A protocol-specific handle to a string of input keys."""
         pass
 
+class SetWindowRectProtocolPart(ProtocolPart):
+    """Protocol part for resizing and changing location of window"""
+    __metaclass__ ABCMeta
+
+    name = "set_window_rect"
+
+    @abstractmethod
+    def set_window_rect(self, x, y, width, height):
+        """Change the window rect
+
+        :param x: The x coordinate of the top left of the window.
+        :param y: The y coordinate of the top left of the window.
+        :param y: The width of the window.
+        :param y: The height of the window."""
+        pass
 
 class TestDriverProtocolPart(ProtocolPart):
     """Protocol part that implements the basic functionality required for

@@ -70,4 +70,15 @@
         window.opener.postMessage({"type": "action", "action": "send_keys", "selector": selector, "keys": keys}, "*");
         return pending_promise;
     };
+
+    window.test_driver_internal.set_element_rect = function(x, y, width, height) {
+        const selector = get_selector(element);
+        const pending_promise = new Promise(function(resolve, reject) {
+            pending_resolve = resolve;
+            pending_reject = reject;
+        });
+        window.opener.postMessage(
+            {"type": "action", "action": "set_window_rect", "x": x, "y": y, "width": width, "height": height}, "*");
+        return pending_promise;
+    };
 })();

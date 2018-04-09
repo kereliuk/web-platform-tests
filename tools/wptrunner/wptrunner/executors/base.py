@@ -503,6 +503,7 @@ class CallbackHandler(object):
         self.actions = {
             "click": ClickAction(self.logger, self.protocol),
             "send_keys": SendKeysAction(self.logger, self.protocol)
+            "set_window_rect": SetWindowRectAction(self.logger, self.protocol)
         }
 
     def __call__(self, result):
@@ -575,3 +576,13 @@ class SendKeysAction(object):
             raise ValueError("Selector matches multiple elements")
         self.logger.debug("Sending keys to element: %s" % selector)
         self.protocol.send_keys.send_keys(elements[0], keys)
+
+class SetWindowRectAction(object):
+    def __init__(self, logger, protocol):
+        self.logger = logger
+        self.protocol = protocol
+
+    def __call__(self, payload):
+        x, y, width, height = payload["x"], payload["y"], payload["width"], payload["height"]
+        self.logger.debug("Sending keys to element: %s" % selector)
+        self.protocol.set_window_rect_.set_window_rect(x, y, width, height)

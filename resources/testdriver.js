@@ -86,6 +86,24 @@
         },
 
         /**
+         * Triggers browser window to be resized and relocated
+         *
+         * This matches the behaviour of the {@link
+         * https://w3c.github.io/webdriver/webdriver-spec.html#dfn-set-window-rect|WebDriver
+         * Set Window Rect command}.
+         *
+         * @param {Integer} x - The x coordinate of the top left of the window
+         * @param {Integer} y - The x coordinate of the top left of the window
+         * @param {Integer} width - The width of the window
+         * @param {Integer} height - The width of the window
+         * @returns {Promise} fulfilled after window rect is set occurs, or rejected in
+         *                    the cases the WebDriver command errors
+         */
+        set_window_rect: function(x, y, width, height) {
+            return window.test_driver_internal.set_element_rect(x, y, width, height);
+        },
+
+        /**
          * Send keys to an element
          *
          * This matches the behaviour of the {@link
@@ -132,6 +150,24 @@
          */
         click: function(element, coords) {
             return Promise.reject(new Error("unimplemented"));
+        },
+
+        /**
+         * Triggers browser window to be resized and relocated
+         *
+         * This matches the behaviour of the {@link
+         * https://w3c.github.io/webdriver/webdriver-spec.html#dfn-set-window-rect|WebDriver
+         * Set Window Rect command}.
+         *
+         * @param {Integer} x - The x coordinate of the top left of the window
+         * @param {Integer} y - The x coordinate of the top left of the window
+         * @param {Integer} width - The width of the window
+         * @param {Integer} height - The width of the window
+         * @returns {Promise} fulfilled after window rect is set occurs, or rejected in
+         *                    the cases the WebDriver command errors
+         */
+        set_window_rect: function(x, y, width, height) {
+            return Promise.reject(new Error("unimplemented"))
         },
 
         /**
