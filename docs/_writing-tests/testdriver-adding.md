@@ -17,7 +17,6 @@ First, we need to think of what the API will look like a little. We will be usin
 
 The first part of this will be browser agnostic, but later we will need to implement a specific layer for each browser (here we will do Firefox and Chrome).
 
-
 ## Code!
 
 ### ```resources/testdriver.js```
@@ -164,8 +163,15 @@ Now we write the browser specific implementations
 
 ### Chrome
 
+We will use executorselenium and use the selenium protocol (in the future there are plans to use the WebDriver API directly).
 
 ### Firefox
 We use the [set window size](http://marionette-client.readthedocs.io/en/master/reference.html#marionette_driver.marionette.Marionette.set_window_rect) marionette command.
 
 ### Other Browsers
+
+
+### Write an infra test
+
+
+
