@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>TestDriver click method</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+
+<script>
+async_test(t => {
+  test_driver
+    .set_window_rect(1, 1, 100, 100)
+    .then(() => t.done())
+    .catch(t.unreached_func("set_window_rect` failed"));
+});
+</script>
