@@ -155,8 +155,8 @@ class SetWindowRectAction(object):
 
     def __call__(self, payload):
         x, y, width, height = payload["x"], payload["y"], payload["width"], payload["height"]
-        self.logger.debug("Setting window rect to be: x=%s, y=%s, width=%s, height=%s" 
-                            % x, y, width, height)
+        self.logger.debug("Setting window rect to be: x=%s, y=%s, width=%s, height=%s"
+                          .format(x, y, width, height))
         self.protocol.set_window_rect_.set_window_rect(x, y, width, height)
 ```
 
