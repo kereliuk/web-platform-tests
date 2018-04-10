@@ -275,7 +275,7 @@ class SendKeysProtocolPart(ProtocolPart):
 
 class SetWindowRectProtocolPart(ProtocolPart):
     """Protocol part for resizing and changing location of window"""
-    __metaclass__ ABCMeta
+    __metaclass__ = ABCMeta
 
     name = "set_window_rect"
 

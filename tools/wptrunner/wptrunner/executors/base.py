@@ -502,7 +502,7 @@ class CallbackHandler(object):
 
         self.actions = {
             "click": ClickAction(self.logger, self.protocol),
-            "send_keys": SendKeysAction(self.logger, self.protocol)
+            "send_keys": SendKeysAction(self.logger, self.protocol),
             "set_window_rect": SetWindowRectAction(self.logger, self.protocol)
         }
 

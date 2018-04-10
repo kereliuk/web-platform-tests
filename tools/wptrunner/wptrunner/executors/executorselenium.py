@@ -20,6 +20,7 @@ from .protocol import (BaseProtocolPart,
                        SelectorProtocolPart,
                        ClickProtocolPart,
                        SendKeysProtocolPart,
+                       SetWindowRectProtocolPart,
                        TestDriverProtocolPart)
 from ..testrunner import Stop
 
@@ -142,6 +143,12 @@ class SeleniumSendKeysProtocolPart(SendKeysProtocolPart):
     def send_keys(self, element, keys):
         return element.send_keys(keys)
 
+class SeleniumSetWindowRectProtocolPart(SetWindowRectProtocolPart):
+    def setup(self):
+        self.webdriver = self.parent.webdriver
+
+    def set_window_rect(self, x, y, width, height):
+        return self.webdriver.set_window_rect(x, y, width, height)
 
 class SeleniumTestDriverProtocolPart(TestDriverProtocolPart):
     def setup(self):
@@ -163,6 +170,7 @@ class SeleniumProtocol(Protocol):
                   SeleniumSelectorProtocolPart,
                   SeleniumClickProtocolPart,
                   SeleniumSendKeysProtocolPart,
+                  SeleniumSetWindowRectProtocolPart,
                   SeleniumTestDriverProtocolPart]
 
     def __init__(self, executor, browser, capabilities, **kwargs):

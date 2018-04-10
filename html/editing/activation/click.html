@@ -13,6 +13,6 @@ test(function() {
     assert_false(e.isTrusted, "Event should not be trusted")
   }));
   element.click();
-  assert_true(received, "click event should have been dispatched synchronously");
+  assert_false(received, "click event should have been dispatched synchronously");
 })
 </script>

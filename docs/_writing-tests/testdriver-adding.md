@@ -102,7 +102,7 @@ The main thing here is the postMessage argument. The first argument is a json ob
 ```python
 class SetWindowRectProtocolPart(ProtocolPart):
     """Protocol part for resizing and changing location of window"""
-    __metaclass__ ABCMeta
+    __metaclass__ = ABCMeta
 
     name = "set_window_rect"
 
@@ -163,10 +163,54 @@ Now we write the browser specific implementations
 
 ### Chrome
 
-We will use executorselenium and use the selenium protocol (in the future there are plans to use the WebDriver API directly).
+We will use executorselenium and use the Selenium API (in the future there are plans to use the WebDriver API directly).
+
+We have little actual work to do here! We just need to define a subclass of the protocol part we defined earlier.
+
+```python
+class SeleniumSetWindowRectProtocolPart(SetWindowRectProtocolPart):
+    def setup(self):
+        self.webdriver = self.parent.webdriver
+
+    def set_window_rect(self, x, y, width, height):
+        return self.webdriver.set_window_rect(x, y, width, height)
+```
+
+Make sure to import the protocol part too!
+
+```python
+from .protocol import (BaseProtocolPart,
+                       TestharnessProtocolPart,
+                       Protocol,
+                       SelectorProtocolPart,
+                       ClickProtocolPart,
+                       SendKeysProtocolPart,
+                       {... other protocol parts}
+                       SetWindowRectProtocolPart, # add this!
+                       TestDriverProtocolPart)
+```
+
+Here we have the setup method which just redefines the webdriver object at this level. The important part is the set_window_rect function (and it's important it is named that since we called it that earlier). This will be call the Selenium API for [set window rect](http://selenium-python.readthedocs.io/api.html#selenium.webdriver.remote.webdriver.WebDriver.set_window_rect) (self.webdriver is a Selenium WebDriver instance here).
+
+Finally, we just need to tell the SeleniumProtocol to implement this part.
+
+```python
+class SeleniumProtocol(Protocol):
+    implements = [SeleniumBaseProtocolPart,
+                  SeleniumTestharnessProtocolPart,
+                  SeleniumSelectorProtocolPart,
+                  SeleniumClickProtocolPart,
+                  SeleniumSendKeysProtocolPart,
+                  {... other protocol parts}
+                  SeleniumSetWindowRectProtocolPart,
+                  SeleniumTestDriverProtocolPart]
+```
+
 
 ### Firefox
-We use the [set window size](http://marionette-client.readthedocs.io/en/master/reference.html#marionette_driver.marionette.Marionette.set_window_rect) marionette command.
+We use the [set window rect](http://marionette-client.readthedocs.io/en/master/reference.html#marionette_driver.marionette.Marionette.set_window_rect) marionette command.
+
+
 
 ### Other Browsers
 
