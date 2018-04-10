@@ -285,8 +285,8 @@ class SetWindowRectProtocolPart(ProtocolPart):
 
         :param x: The x coordinate of the top left of the window.
         :param y: The y coordinate of the top left of the window.
-        :param y: The width of the window.
-        :param y: The height of the window."""
+        :param width: The width of the window.
+        :param height: The height of the window."""
         pass
 
 class TestDriverProtocolPart(ProtocolPart):

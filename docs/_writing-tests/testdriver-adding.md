@@ -4,6 +4,7 @@
 We assume the following in this writeup:
  - you know what web-platform-tests is and you have a working checkout and can run tests
  - maybe some more about WebDriver
+ - familiarity with javascript and python
 
 ## What problem are we trying to solve?
 
@@ -112,8 +113,8 @@ class SetWindowRectProtocolPart(ProtocolPart):
 
         :param x: The x coordinate of the top left of the window.
         :param y: The y coordinate of the top left of the window.
-        :param y: The width of the window.
-        :param y: The height of the window."""
+        :param width: The width of the window.
+        :param height: The height of the window."""
         pass
 ```
 
