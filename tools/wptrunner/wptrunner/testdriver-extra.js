@@ -72,7 +72,6 @@
     };
 
     window.test_driver_internal.set_element_rect = function(x, y, width, height) {
-        const selector = get_selector(element);
         const pending_promise = new Promise(function(resolve, reject) {
             pending_resolve = resolve;
             pending_reject = reject;
