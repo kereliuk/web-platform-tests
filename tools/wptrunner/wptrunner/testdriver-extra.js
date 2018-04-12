@@ -19,8 +19,7 @@
         } else {
             pending_reject();
         }
-    });
-
+    });aaa
     const get_selector = function(element) {
         let selector;
 
