@@ -104,7 +104,7 @@ class SeleniumTestharnessProtocolPart(TestharnessProtocolPart):
                 win_obj = json.loads(win_s)
                 test_window = win_obj["window-fcc6-11e5-b4f8-330a88ab9d7f"]
             except Exception:
-                pass
+                passa
 
         if test_window is None:
             after = self.webdriver.window_handles
