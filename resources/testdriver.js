@@ -119,6 +119,15 @@
             }
 
             return window.test_driver_internal.send_keys(element, keys);
+        },
+
+        /**
+         * Minimized the current window
+         *
+         * @returns {Promise} fulfilled after the window is minimized or rejected if the minimize fails 
+         */
+        minimize: function() {
+            return window.test_driver_internal.minimize();
         }
     };
 
@@ -142,6 +151,15 @@
          * @returns {Promise} fulfilled after keys are sent or rejected if click fails
          */
         send_keys: function(element, keys) {
+            return Promise.reject(new Error("unimplemented"));
+        },
+
+        /**
+         * Minimized the current window
+         *
+         * @returns {Promise} fulfilled after the window is minimized or rejected if the minimize fails 
+         */
+        minimize: function() {
             return Promise.reject(new Error("unimplemented"));
         }
     };
