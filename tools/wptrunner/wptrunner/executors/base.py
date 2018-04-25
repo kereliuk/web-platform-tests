@@ -504,7 +504,7 @@ class CallbackHandler(object):
 
         self.actions = {
             "click": ClickAction(self.logger, self.protocol),
-            "send_keys": SendKeysAction(self.logger, self.protocol)
+            "send_keys": SendKeysAction(self.logger, self.protocol),
             "minimize": MinimizeAction(self.logger, self.protocol)
         }
 
