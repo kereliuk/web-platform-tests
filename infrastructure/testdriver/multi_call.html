@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>TestDriver multiple calls</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+
+<button type="button" id="button">Button</button>
+
+<script>
+async_test(t => {
+  let button = document.getElementById("button");
+  for (var i = 0; i < 10; i++) {
+      test_driver.click(button);
+  }
+  t.done();
+});
+</script>

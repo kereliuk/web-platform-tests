@@ -1,6 +1,7 @@
 "use strict";
 
 (function(){
+    console.log("test_driver call started")
     let pending_resolve = null;
     let pending_reject = null;
     window.addEventListener("message", function(event) {
